@@ -655,12 +655,14 @@ always@(*) begin
   end
 end
 
+// [NOTE]: `MUL operates on 128 bit vector
 // mul alus with d1_reg
 //  in a 4 of 4x4 tiled way for instantiation
 generate 
   for (z=0; z<4; z=z+1) begin 
     for (x=0; x<4; x=x+1) begin
       for (y=0; y<4; y=y+1) begin
+        // [NOTE]: Perform a [15:0]Out = [7:0]In0 * [7:0]In1
         rvv_backend_mul_unit_mul8 u_mul8 (
           .out(mac8_out[z*16+y*4+x]), //16bit out
           .in0(mac8_in0[z*4+x]), 
@@ -708,10 +710,11 @@ edff #(.T(logic [`PC_WIDTH-1:0])) u_PC_delay (.q(mac_uop_pc_d1), .clk(clk), .rst
 // After mac, calculte eew8, eew16, eew32 results
 // Here we have a ([15:0] [63:0] mac8_out_d1)
 //eew8
-//full rslt is 16bit
+//full rslt is 16bit (128/8)
 always@(*) begin
   for (i=0; i<4; i=i+1) begin //z
     for (j=0; j<4; j=j+1) begin //x
+        // [NOTE]: get MAC result
         mac_rslt_full_eew8_d1[i*4+j] = mac8_out_d1[i*16+j*5];
         mac_rslt_eew8_widen_d1[16*(i*4+j) +: 16] = mac_rslt_full_eew8_d1[i*4+j];//widen, and convert to [255:0]
         mac_rslt_eew8_no_widen_d1[8*(i*4+j) +: 8] = mac_keep_low_bits_d1 ? mac_rslt_full_eew8_d1[i*4+j][7:0] : mac_rslt_full_eew8_d1[i*4+j][15:8];
@@ -726,6 +729,7 @@ always@(*) begin
                                                                                       mac_rslt_full_eew8_d1[i*4+j][7+:8] + {7'b0,vsmul_round_incr_eew8_d1[i*4+j]};//right shift 7bit then +"1"
         vsmul_sat_eew8_d1[i*4+j] = mac_rslt_full_eew8_d1[i*4+j][15:14] == 2'b01;
         //Below are for vmac related instructions
+        // [NOTE]: accumulate here
         vmac_mul_add_eew8_no_widen_d1[i*4+j] = {1'b0,mac_addsrc_d1[8*(i*4+j) +: 8]} + {1'b0,mac_rslt_eew8_no_widen_d1[8*(i*4+j) +: 8]};//9bit
         vmac_mul_sub_eew8_no_widen_d1[i*4+j] = {1'b0,mac_addsrc_d1[8*(i*4+j) +: 8]} - {1'b0,mac_rslt_eew8_no_widen_d1[8*(i*4+j) +: 8]};
         vmac_rslt_eew8_no_widen_d1[8*(i*4+j) +:8] = mac_mul_reverse_d1 ? vmac_mul_sub_eew8_no_widen_d1[i*4+j][7:0] :

@@ -60,6 +60,7 @@ assign rs2mac_uop_valid[1] = !(rs2ex_fifo_empty || rs2ex_fifo_1left_to_empty) &&
 assign rs2mac_uop_data[0] = rs2ex_uop_data[0];
 assign rs2mac_uop_data[1] = rs2ex_uop_data[1];
 
+// [NOTE] initiate 2 rvv_backend_mac_unit, chose one for computation
 // Inst of MUL-ex and MAC-ex
 //MAC 0
 rvv_backend_mac_unit u_mac0 (
