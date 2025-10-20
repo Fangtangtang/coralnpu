@@ -8,6 +8,7 @@
 `include "rvv_backend.svh"
 `endif
 
+// [NOTE]: Matrix (MAC) execution engine
 module rvv_backend_mac_unit (
   // Outputs
   mac2rob_uop_valid, mac2rob_uop_data,

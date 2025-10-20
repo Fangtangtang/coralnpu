@@ -3,6 +3,7 @@
 `include "rvv_backend.svh"
 `endif
 
+// [NOTE]: Vector execution engine
 module rvv_backend_alu_unit
 (
   clk,
@@ -24,7 +25,7 @@ module rvv_backend_alu_unit
 
   // ALU RS handshake signals
   input   logic           alu_uop_valid;
-  input   ALU_RS_t        alu_uop;
+  input   ALU_RS_t        alu_uop; // the input: a struct of input vectors...
   output  logic           pop_rs;
 
   // ALU send result signals to ROB
